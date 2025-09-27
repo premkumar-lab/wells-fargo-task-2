@@ -1,86 +1,70 @@
-package com.wellsfargo.counselor.entity;
+package com.example.financemanager.entities;
 
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
-public class Advisor {
+@Table(name = "financial_advisors")
+public class FinancialAdvisor {
 
     @Id
-    @GeneratedValue()
-    private long advisorId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
-    private String firstName;
+    private String name;
 
-    @Column(nullable = false)
-    private String lastName;
-
-    @Column(nullable = false)
-    private String address;
-
-    @Column(nullable = false)
-    private String phone;
-
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    protected Advisor() {
+    private String phone;
 
-    }
+    @OneToMany(mappedBy = "advisor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Client> clients = new HashSet<>();
 
-    public Advisor(String firstName, String lastName, String address, String phone, String email) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.address = address;
-        this.phone = phone;
+    // JPA requires a no-arg constructor
+    protected FinancialAdvisor() {}
+
+    // Full-arg constructor (initializes all instance vars including id)
+    public FinancialAdvisor(Long id, String name, String email, String phone, Set<Client> clients) {
+        this.id = id;
+        this.name = name;
         this.email = email;
-    }
-
-    public Long getAdvisorId() {
-        return advisorId;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
         this.phone = phone;
+        this.clients = clients != null ? clients : new HashSet<>();
     }
 
-    public String getEmail() {
-        return email;
+    // Convenience constructor (without id)
+    public FinancialAdvisor(String name, String email, String phone) {
+        this(null, name, email, phone, null);
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    // Getters (no setId)
+    public Long getId() { return id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public Set<Client> getClients() { return clients; }
+    public void setClients(Set<Client> clients) {
+        this.clients = clients != null ? clients : new HashSet<>();
+    }
+
+    // Helper methods
+    public void addClient(Client client) {
+        clients.add(client);
+        client.setAdvisor(this);
+    }
+
+    public void removeClient(Client client) {
+        clients.remove(client);
+        client.setAdvisor(null);
     }
 }
